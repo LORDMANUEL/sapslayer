@@ -1,0 +1,30 @@
+services:
+  db:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_USER: sapuser
+      POSTGRES_PASSWORD: sappassword
+      POSTGRES_DB: sap_bi_hub
+    ports:
+      - "5432:5432"
+
+  api:
+    build:
+      context: .
+      dockerfile: src/SapBiHub.Api/Dockerfile
+    environment:
+      ConnectionStrings__DefaultConnection: "Host=db;Database=sap_bi_hub;Username=sapuser;Password=sappassword"
+    ports:
+      - "7071:8080"
+    depends_on:
+      - db
+
+  worker:
+    build:
+      context: .
+      dockerfile: src/SapBiHub.Worker/Dockerfile
+    environment:
+      ConnectionStrings__DefaultConnection: "Host=db;Database=sap_bi_hub;Username=sapuser;Password=sappassword"
+    depends_on:
+      - db

@@ -1,0 +1,16 @@
+using SapBiHub.Worker;
+using Microsoft.EntityFrameworkCore;
+using SapBiHub.Storage;
+using SapBiHub.SapClient;
+
+var builder = Host.CreateApplicationBuilder(args);
+
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddHttpClient<SapServiceLayerClient>();
+
+builder.Services.AddHostedService<Worker>();
+
+var host = builder.Build();
+host.Run();
