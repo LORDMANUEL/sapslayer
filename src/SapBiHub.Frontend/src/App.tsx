@@ -1,191 +1,154 @@
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import { LayoutDashboard, Database, Search, Settings, Activity, Play, Filter, Save, MessageSquare } from 'lucide-react';
+import { LayoutDashboard, Database, Search, Settings, Activity, Play, Filter, Save, MessageSquare, Server, CheckCircle, AlertCircle } from 'lucide-react';
 
 const Sidebar = () => (
-  <div className="w-64 bg-slate-900 text-white min-h-screen p-4">
-    <h1 className="text-2xl font-bold mb-8">SAP BI Hub</h1>
-    <nav className="space-y-4">
-      <Link to="/" className="flex items-center gap-2 hover:text-blue-400">
+  <div className="w-64 bg-slate-900 text-white min-h-screen p-6 flex flex-col">
+    <div className="flex items-center gap-3 mb-10">
+      <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center font-bold">S</div>
+      <h1 className="text-xl font-bold tracking-tight">SAP BI Hub</h1>
+    </div>
+    <nav className="space-y-2 flex-1">
+      <Link to="/" className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-slate-800 transition text-slate-300 hover:text-white">
         <LayoutDashboard size={20} /> Dashboard
       </Link>
-      <Link to="/queries" className="flex items-center gap-2 hover:text-blue-400">
+      <Link to="/queries" className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-slate-800 transition text-slate-300 hover:text-white">
         <Search size={20} /> Query Studio
       </Link>
-      <Link to="/datasets" className="flex items-center gap-2 hover:text-blue-400">
+      <Link to="/datasets" className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-slate-800 transition text-slate-300 hover:text-white">
         <Database size={20} /> Datasets
       </Link>
-      <Link to="/observability" className="flex items-center gap-2 hover:text-blue-400">
-        <Activity size={20} /> Observability
-      </Link>
-      <Link to="/settings" className="flex items-center gap-2 hover:text-blue-400">
-        <Settings size={20} /> Settings
+      <Link to="/system" className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-slate-800 transition text-slate-300 hover:text-white">
+        <Server size={20} /> System Status
       </Link>
     </nav>
+    <div className="mt-auto pt-6 border-t border-slate-800">
+       <Link to="/settings" className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-slate-800 transition text-slate-300 hover:text-white">
+        <Settings size={20} /> Settings
+      </Link>
+    </div>
   </div>
 );
 
 const Dashboard = () => (
-  <div className="p-8">
-    <h2 className="text-2xl font-bold mb-6">Dashboard</h2>
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <div className="bg-white p-6 rounded-lg shadow border border-slate-200">
-        <h3 className="text-slate-500 text-sm font-medium">SAP Session Status</h3>
-        <p className="text-2xl font-bold text-green-600">Connected</p>
+  <div className="p-10 max-w-7xl mx-auto">
+    <div className="flex justify-between items-end mb-8">
+      <div>
+        <h2 className="text-3xl font-bold text-slate-900">Overview</h2>
+        <p className="text-slate-500">Global performance and materialization status</p>
       </div>
-      <div className="bg-white p-6 rounded-lg shadow border border-slate-200">
-        <h3 className="text-slate-500 text-sm font-medium">Active Jobs</h3>
-        <p className="text-2xl font-bold">12</p>
+      <div className="flex gap-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
+        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-500"></span> SAP Live</span>
+        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-500"></span> Postgres OK</span>
       </div>
-      <div className="bg-white p-6 rounded-lg shadow border border-slate-200">
-        <h3 className="text-slate-500 text-sm font-medium">Rows Materialized</h3>
-        <p className="text-2xl font-bold">1.2M</p>
+    </div>
+
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
+      <StatCard title="Total Datasets" value="24" icon={<Database className="text-blue-500" />} trend="+2 this month" />
+      <StatCard title="Rows Materialized" value="4.8M" icon={<Activity className="text-purple-500" />} trend="Sub-second latency" />
+      <StatCard title="Active Jobs" value="8" icon={<Play className="text-green-500" />} trend="Scheduled" />
+      <StatCard title="AI Queries" value="156" icon={<MessageSquare className="text-amber-500" />} trend="78% success rate" />
+    </div>
+
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100">
+        <h3 className="text-lg font-bold mb-6">Recent Executions</h3>
+        <div className="space-y-4">
+          <ExecutionItem name="ds_invoices_daily" time="2m ago" status="Success" rows="12,400" />
+          <ExecutionItem name="ds_business_partners" time="15m ago" status="Success" rows="845" />
+          <ExecutionItem name="ds_stock_valuation" time="1h ago" status="Warning" rows="-" error="SAP Timeout" />
+          <ExecutionItem name="ds_sales_orders" time="2h ago" status="Success" rows="5,200" />
+        </div>
+      </div>
+      <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 flex flex-col">
+        <h3 className="text-lg font-bold mb-6">Storage Utilization</h3>
+        <div className="flex-1 flex items-center justify-center">
+            <div className="w-48 h-48 rounded-full border-8 border-slate-100 relative flex items-center justify-center">
+                <div className="absolute inset-0 rounded-full border-8 border-blue-500 border-t-transparent -rotate-45"></div>
+                <div className="text-center">
+                    <p className="text-3xl font-bold">64%</p>
+                    <p className="text-xs text-slate-400 uppercase">Postgres DB</p>
+                </div>
+            </div>
+        </div>
       </div>
     </div>
   </div>
 );
 
-const QueryStudio = () => {
-  const [prompt, setPrompt] = useState("");
-  const [result, setResult] = useState<any>(null);
+const StatCard = ({ title, value, icon, trend }: any) => (
+  <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:border-blue-200 transition">
+    <div className="flex justify-between items-start mb-4">
+      <div className="p-2 bg-slate-50 rounded-xl">{icon}</div>
+      <span className="text-[10px] font-bold text-slate-400 uppercase bg-slate-50 px-2 py-1 rounded-md">{trend}</span>
+    </div>
+    <h3 className="text-slate-500 text-sm font-medium">{title}</h3>
+    <p className="text-2xl font-bold text-slate-900 mt-1">{value}</p>
+  </div>
+);
 
-  const handleAiPropose = () => {
-    setResult({
-      endpoint: "/Invoices",
-      select: "DocEntry,CardCode,DocTotal",
-      filter: "DocTotal gt 1000",
-      top: 50
-    });
-  };
+const ExecutionItem = ({ name, time, status, rows, error }: any) => (
+  <div className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition border border-transparent hover:border-slate-100">
+    <div className="flex items-center gap-3">
+      {status === 'Success' ? <CheckCircle className="text-green-500" size={18} /> : <AlertCircle className="text-amber-500" size={18} />}
+      <div>
+        <p className="text-sm font-bold text-slate-800">{name}</p>
+        <p className="text-[10px] text-slate-400 uppercase font-medium">{time}</p>
+      </div>
+    </div>
+    <div className="text-right">
+      <p className="text-sm font-bold text-slate-700">{rows}</p>
+      <p className="text-[10px] font-bold text-slate-400 uppercase">{error || status}</p>
+    </div>
+  </div>
+);
 
-  return (
-    <div className="p-8">
-      <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-        <Search /> Query Studio
-      </h2>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="space-y-6">
-          <div className="bg-white p-6 rounded-lg shadow border border-slate-200">
-            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              <MessageSquare size={18} /> AI Assistant
-            </h3>
-            <textarea
-              className="w-full p-3 border rounded-md h-32"
-              placeholder="E.g., Show me all invoices with total greater than 1000"
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-            />
-            <button
-              onClick={handleAiPropose}
-              className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition"
-            >
-              Propose Query
-            </button>
-          </div>
-
-          {result && (
-            <div className="bg-slate-100 p-6 rounded-lg border border-slate-300">
-              <h3 className="text-lg font-semibold mb-4">Proposed Query</h3>
-              <div className="space-y-2 font-mono text-sm">
-                <p><strong>Endpoint:</strong> {result.endpoint}</p>
-                <p><strong>$select:</strong> {result.select}</p>
-                <p><strong>$filter:</strong> {result.filter}</p>
-                <p><strong>$top:</strong> {result.top}</p>
-              </div>
-              <div className="mt-6 flex gap-3">
-                <button className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-md">
-                  <Play size={16} /> Run Preview
-                </button>
-                <button className="flex items-center gap-2 bg-slate-800 text-white px-4 py-2 rounded-md">
-                  <Save size={16} /> Save as Dataset
-                </button>
-              </div>
-            </div>
-          )}
+const SystemStatus = () => (
+  <div className="p-10 max-w-7xl mx-auto">
+    <h2 className="text-3xl font-bold text-slate-900 mb-8">Debian System Health</h2>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="bg-slate-900 text-white p-8 rounded-2xl shadow-lg font-mono">
+        <h3 className="text-blue-400 mb-4 flex items-center gap-2 font-sans"><Server size={18} /> systemctl status</h3>
+        <div className="text-xs space-y-2 opacity-80">
+          <p>● sapbihub-api.service - SAP BI Hub API</p>
+          <p className="text-green-400">   Active: active (running) since Mon 2026-03-02</p>
+          <p>   Main PID: 12450 (dotnet)</p>
+          <p className="mt-4">● sapbihub-worker.service - SAP BI Hub Worker</p>
+          <p className="text-green-400">   Active: active (running) since Mon 2026-03-02</p>
+          <p>   Main PID: 12451 (dotnet)</p>
         </div>
-
-        <div className="bg-white p-6 rounded-lg shadow border border-slate-200">
-          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <Filter size={18} /> Manual Builder
-          </h3>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Entity</label>
-              <select className="w-full p-2 border rounded-md">
-                <option>Invoices</option>
-                <option>Orders</option>
-                <option>BusinessPartners</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Select Fields</label>
-              <input type="text" className="w-full p-2 border rounded-md" placeholder="DocEntry, CardCode, ..." />
-            </div>
+      </div>
+      <div className="space-y-6">
+        <div className="bg-white p-6 rounded-2xl border border-slate-100">
+          <h3 className="font-bold mb-4">Ollama LLM (coder 1.0b)</h3>
+          <div className="flex items-center gap-2 text-green-600 text-sm font-semibold">
+            <CheckCircle size={16} /> Service Online
           </div>
+          <p className="text-xs text-slate-500 mt-2">GPU Acceleration: Disabled (CPU Mode)</p>
+        </div>
+        <div className="bg-white p-6 rounded-2xl border border-slate-100">
+          <h3 className="font-bold mb-4">Debian Environment</h3>
+          <p className="text-sm text-slate-700">OS: Debian GNU/Linux 12 (bookworm)</p>
+          <p className="text-sm text-slate-700">Architecture: x86_64</p>
+          <p className="text-sm text-slate-700">Kernel: 6.1.0-18-amd64</p>
         </div>
       </div>
     </div>
-  );
-};
-
-const Datasets = () => {
-  const mockDatasets = [
-    { id: 1, name: "ds_invoices_high", query: "/Invoices", lastRun: "2 mins ago", status: "OK", rows: "1,245" },
-    { id: 2, name: "ds_orders_pending", query: "/Orders", lastRun: "1 hour ago", status: "OK", rows: "450" },
-    { id: 3, name: "ds_bp_catalog", query: "/BusinessPartners", lastRun: "Yesterday", status: "FAIL", rows: "0" },
-  ];
-
-  return (
-    <div className="p-8">
-      <h2 className="text-2xl font-bold mb-6">Datasets</h2>
-      <div className="bg-white rounded-lg shadow overflow-hidden border border-slate-200">
-        <table className="w-full text-left">
-          <thead className="bg-slate-50 border-b border-slate-200">
-            <tr>
-              <th className="px-6 py-3 text-sm font-semibold text-slate-700">Dataset Name</th>
-              <th className="px-6 py-3 text-sm font-semibold text-slate-700">Endpoint</th>
-              <th className="px-6 py-3 text-sm font-semibold text-slate-700">Last Run</th>
-              <th className="px-6 py-3 text-sm font-semibold text-slate-700">Status</th>
-              <th className="px-6 py-3 text-sm font-semibold text-slate-700">Rows</th>
-              <th className="px-6 py-3 text-sm font-semibold text-slate-700">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-200">
-            {mockDatasets.map((ds) => (
-              <tr key={ds.id}>
-                <td className="px-6 py-4 text-sm font-medium text-slate-900">{ds.name}</td>
-                <td className="px-6 py-4 text-sm text-slate-600">{ds.query}</td>
-                <td className="px-6 py-4 text-sm text-slate-600">{ds.lastRun}</td>
-                <td className="px-6 py-4 text-sm">
-                  <span className={`px-2 py-1 rounded-full text-xs font-semibold ${ds.status === 'OK' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                    {ds.status}
-                  </span>
-                </td>
-                <td className="px-6 py-4 text-sm text-slate-600">{ds.rows}</td>
-                <td className="px-6 py-4 text-sm">
-                  <button className="text-blue-600 hover:text-blue-800">Explore</button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-};
+  </div>
+);
 
 function App() {
   return (
     <Router>
-      <div className="flex bg-slate-50 min-h-screen">
+      <div className="flex bg-slate-50 min-h-screen text-slate-900">
         <Sidebar />
-        <main className="flex-1">
+        <main className="flex-1 overflow-y-auto">
           <Routes>
             <Route path="/" element={<Dashboard />} />
-            <Route path="/queries" element={<QueryStudio />} />
-            <Route path="/datasets" element={<Datasets />} />
-            <Route path="/observability" element={<div className="p-8">Observability</div>} />
-            <Route path="/settings" element={<div className="p-8">Settings</div>} />
+            <Route path="/queries" element={<div className="p-10">Query Studio</div>} />
+            <Route path="/datasets" element={<div className="p-10">Datasets</div>} />
+            <Route path="/system" element={<SystemStatus />} />
+            <Route path="/settings" element={<div className="p-10">Settings</div>} />
           </Routes>
         </main>
       </div>
